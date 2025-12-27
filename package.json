@@ -1,0 +1,48 @@
+{
+  "name": "leafmap",
+  "version": "1.0.0",
+  "description": "Интерактивное приложение для работы с картами",
+  "main": "script.js",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "live-server",
+    "build": "webpack",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "maps",
+    "leaflet",
+    "gis",
+    "geolocation",
+    "interactive",
+    "cartography"
+  ],
+  "author": "Daniil <dan1795dan@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "babel-loader": "^9.1.0",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "live-server": "^1.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dan1795qa/Leafmap_test.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dan1795qa/Leafmap_test/issues"
+  },
+  "homepage": "https://github.com/dan1795qa/Leafmap_test#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
