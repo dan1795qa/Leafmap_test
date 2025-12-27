@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пример 1: Простая интерактивная карта</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        #map {
+            height: calc(100vh - 120px);
+            width: 100%;
+            border-radius: 8px;
+            margin: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #1976D2;
+        }
+        
+        .btn-secondary {
+            background: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #444;
+        }
+        
+        .btn-success {
+            background: #4CAF50;
+        }
+        
+        .btn-success:hover {
+            background: #45a049;
+        }
+        
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .info {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            min-width: 250px;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .info-line {
+            margin: 5px 0;
+            color: #333;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        h1 {
+            color: #333;
+            margin: 10px 0;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Пример 1: Простая интерактивная карта Leaflet</h1>
+        
+        <div class="controls">
+            <select id="mapStyle" onchange="changeMapStyle()">
+                <option value="osm">OpenStreetMap</option>
+                <option value="dark">CartoDB Dark</option>
+                <option value="light">CartoDB Light</option>
+                <option value="satellite">Satellite</option>
+                <option value="topo">OpenTopoMap</option>
+            </select>
+            
+            <button class="btn" onclick="zoomIn()">🔍+ Приблизить</button>
+            <button class="btn" onclick="zoomOut()">🔍- Отдалить</button>
+            <button class="btn btn-secondary" onclick="centerMap()">🎯 Центр</button>
+            <button class="btn btn-success" onclick="getCurrentLocation()">📍 Мое местоположение</button>
+            <button class="btn btn-secondary" onclick="clearMarkers()">🗑️ Очистить маркеры</button>
+            
+            <div class="info">
+                <div class="info-line"><span class="info-label">Масштаб:</span> <span id="zoomLevel">13</span></div>
+                <div class="info-line"><span class="info-label">Центр:</span> <span id="centerCoords">53.90°, 27.56°</span></div>
+                <div class="info-line"><span class="info-label">Маркеров:</span> <span id="markerCount">0</span></div>
+            </div>
+        </div>
+        
+        <div id="map"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        // Инициализация карты
+        const map = L.map('map').setView([53.9045, 27.5615], 13);
+        const markersArray = [];
+        
+        // Тили разных стилей
+        const tileLayers = {
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }),
+            dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CartoDB',
+                maxZoom: 19
+            }),
+            light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CartoDB',
+                maxZoom: 19
+            }),
+            satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; Esri',
+                maxZoom: 18
+            }),
+            topo: L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenTopoMap contributors',
+                maxZoom: 17
+            })
+        };
+        
+        // Начальный стиль
+        tileLayers.osm.addTo(map);
+        
+        // Функции управления
+        function changeMapStyle() {
+            const style = document.getElementById('mapStyle').value;
+            Object.values(tileLayers).forEach(layer => map.removeLayer(layer));
+            tileLayers[style].addTo(map);
+        }
+        
+        function zoomIn() {
+            map.zoomIn();
+        }
+        
+        function zoomOut() {
+            map.zoomOut();
+        }
+        
+        function centerMap() {
+            map.setView([53.9045, 27.5615], 13);
+        }
+        
+        function clearMarkers() {
+            markersArray.forEach(marker => map.removeLayer(marker));
+            markersArray.length = 0;
+            updateInfo();
+        }
+        
+        function getCurrentLocation() {
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 15);
+                    
+                    const marker = L.marker([lat, lng], {title: 'Ваше местоположение'})
+                        .bindPopup('📍 Ваше текущее местоположение')
+                        .openPopup()
+                        .addTo(map);
+                    
+                    markersArray.push(marker);
+                    updateInfo();
+                });
+            } else {
+                alert('Геолокация не поддерживается вашим браузером');
+            }
+        }
+        
+        // Обновление информации
+        function updateInfo() {
+            document.getElementById('zoomLevel').textContent = map.getZoom();
+            const center = map.getCenter();
+            document.getElementById('centerCoords').textContent = 
+                center.lat.toFixed(4) + '°, ' + center.lng.toFixed(4) + '°';
+            document.getElementById('markerCount').textContent = markersArray.length;
+        }
+        
+        // События карты
+        map.on('zoomend', updateInfo);
+        map.on('moveend', updateInfo);
+        
+        // Добавление маркера по клику
+        map.on('click', function(e) {
+            const marker = L.marker(e.latlng)
+                .bindPopup(`
+                    <div>
+                        <b>Новый маркер</b><br>
+                        ${e.latlng.lat.toFixed(6)},<br>
+                        ${e.latlng.lng.toFixed(6)}
+                    </div>
+                `)
+                .addTo(map);
+            
+            markersArray.push(marker);
+            updateInfo();
+        });
+        
+        // Первоначальное обновление
+        updateInfo();
+    </script>
+</body>
+</html>
