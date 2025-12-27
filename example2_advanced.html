@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пример 2: Продвинутая интерактивная карта</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .wrapper {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .sidebar h2 {
+            color: #2196F3;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #2196F3;
+            padding-bottom: 8px;
+        }
+        
+        .sidebar h3 {
+            color: #666;
+            font-size: 13px;
+            margin: 12px 0 8px 0;
+            font-weight: 600;
+        }
+        
+        .checkbox-group {
+            margin-bottom: 12px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .checkbox-item input {\n            margin-right: 8px;\n            cursor: pointer;\n        }\n        \n        .checkbox-item label {\n            cursor: pointer;\n            flex: 1;\n        }\n        \n        .btn {\n            width: 100%;\n            padding: 10px;\n            margin-bottom: 8px;\n            border: none;\n            border-radius: 4px;\n            font-size: 13px;\n            font-weight: 600;\n            cursor: pointer;\n            transition: background 0.3s;\n        }\n        \n        .btn-primary {\n            background: #2196F3;\n            color: white;\n        }\n        \n        .btn-primary:hover {\n            background: #1976D2;\n        }\n        \n        .btn-danger {\n            background: #f44336;\n            color: white;\n        }\n        \n        .btn-danger:hover {\n            background: #da190b;\n        }\n        \n        .btn-success {\n            background: #4CAF50;\n            color: white;\n        }\n        \n        .btn-success:hover {\n            background: #45a049;\n        }\n        \n        .stats {\n            background: #f5f5f5;\n            padding: 12px;\n            border-radius: 4px;\n            margin-top: 15px;\n            font-size: 12px;\n            line-height: 1.6;\n        }\n        \n        .stat-line {\n            margin: 6px 0;\n        }\n        \n        .stat-label {\n            font-weight: bold;\n            color: #2196F3;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"wrapper\">\n        <div class=\"sidebar\">\n            <h2>🗺️ Управление картой</h2>\n            \n            <h3>Базовые слои</h3>\n            <div class=\"checkbox-group\">\n                <div class=\"checkbox-item\">\n                    <input type=\"radio\" name=\"baseLayer\" value=\"osm\" id=\"osm\" checked onchange=\"changeBaseLayer()\">\n                    <label for=\"osm\">OpenStreetMap</label>\n                </div>\n                <div class=\"checkbox-item\">\n                    <input type=\"radio\" name=\"baseLayer\" value=\"dark\" id=\"dark\" onchange=\"changeBaseLayer()\">\n                    <label for=\"dark\">CartoDB Dark</label>\n                </div>\n                <div class=\"checkbox-item\">\n                    <input type=\"radio\" name=\"baseLayer\" value=\"light\" id=\"light\" onchange=\"changeBaseLayer()\">\n                    <label for=\"light\">CartoDB Light</label>\n                </div>\n            </div>\n            \n            <h3>Оверлеи</h3>\n            <div class=\"checkbox-group\">\n                <div class=\"checkbox-item\">\n                    <input type=\"checkbox\" id=\"markers\" checked onchange=\"toggleLayer('markers')\">\n                    <label for=\"markers\">📍 Маркеры (5)</label>\n                </div>\n                <div class=\"checkbox-item\">\n                    <input type=\"checkbox\" id=\"circles\" checked onchange=\"toggleLayer('circles')\">\n                    <label for=\"circles\">🔵 Окружности (5)</label>\n                </div>\n                <div class=\"checkbox-item\">\n                    <input type=\"checkbox\" id=\"polygon\" checked onchange=\"toggleLayer('polygon')\">\n                    <label for=\"polygon\">🔷 Многоугольник</label>\n                </div>\n                <div class=\"checkbox-item\">\n                    <input type=\"checkbox\" id=\"polyline\" checked onchange=\"toggleLayer('polyline')\">\n                    <label for=\"polyline\">➡️ Маршрут</label>\n                </div>\n            </div>\n            \n            <h3>Действия</h3>\n            <button class=\"btn btn-success\" onclick=\"addRandomMarker()\">➕ Добавить маркер</button>\n            <button class=\"btn btn-primary\" onclick=\"fitBounds()\">🎯 Подогнать границы</button>\n            <button class=\"btn btn-danger\" onclick=\"clearAllMarkers()\">🗑️ Очистить маркеры</button>\n            \n            <div class=\"stats\">\n                <div class=\"stat-line\"><span class=\"stat-label\">Маркеры:</span> <span id=\"markerCount\">5</span></div>\n                <div class=\"stat-line\"><span class=\"stat-label\">Масштаб:</span> <span id=\"zoomLevel\">13</span></div>\n                <div class=\"stat-line\"><span class=\"stat-label\">Вид:</span> <span id=\"boundsText\">загрузка...</span></div>\n            </div>\n        </div>\n        \n        <div class=\"map-container\">\n            <div id=\"map\"></div>\n        </div>\n    </div>\n\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js\"></script>\n    <script>\n        // Инициализация карты\n        const map = L.map('map').setView([53.9045, 27.5615], 13);\n        \n        // Управление слоями\n        const layers = {};\n        const markersArray = [];\n        \n        // Базовые слои\n        const baseLayers = {\n            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {\n                attribution: '&copy; OpenStreetMap',\n                maxZoom: 19\n            }),\n            dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {\n                attribution: '&copy; CartoDB',\n                maxZoom: 19\n            }),\n            light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {\n                attribution: '&copy; CartoDB',\n                maxZoom: 19\n            })\n        };\n        \n        // Добавить базовый слой\n        baseLayers.osm.addTo(map);\n        \n        // Создать слой маркеров\n        layers.markers = L.layerGroup();\n        const markerLocations = [\n            {lat: 53.9045, lng: 27.5615, name: 'Центральная площадь'},\n            {lat: 53.9100, lng: 27.5600, name: 'Библиотека'},\n            {lat: 53.9200, lng: 27.5500, name: 'Парк'},\n            {lat: 53.8900, lng: 27.5400, name: 'Музей'},\n            {lat: 53.9300, lng: 27.5700, name: 'Вокзал'}\n        ];\n        \n        markerLocations.forEach(loc => {\n            const marker = L.marker([loc.lat, loc.lng])\n                .bindPopup(`<b>${loc.name}</b><br>${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`)\n                .addTo(layers.markers);\n            markersArray.push(marker);\n        });\n        \n        layers.markers.addTo(map);\n        \n        // Создать слой окружностей\n        layers.circles = L.layerGroup();\n        markerLocations.forEach(loc => {\n            L.circle([loc.lat, loc.lng], {\n                radius: 300,\n                color: '#2196F3',\n                fillColor: '#2196F3',\n                fillOpacity: 0.2,\n                weight: 2\n            }).bindPopup(`Радиус: 300м`).addTo(layers.circles);\n        });\n        layers.circles.addTo(map);\n        \n        // Создать многоугольник\n        layers.polygon = L.layerGroup();\n        const polygon = L.polygon([\n            [53.9045, 27.5615],\n            [53.9100, 27.5600],\n            [53.9200, 27.5500],\n            [53.9150, 27.5550]\n        ], {\n            color: 'purple',\n            fillColor: '#9c27b0',\n            fillOpacity: 0.3,\n            weight: 2\n        }).bindPopup('Многоугольник').addTo(layers.polygon);\n        layers.polygon.addTo(map);\n        \n        // Создать маршрут\n        layers.polyline = L.layerGroup();\n        const route = L.polyline([\n            [53.9045, 27.5615],\n            [53.9100, 27.5600],\n            [53.9200, 27.5500],\n            [53.8900, 27.5400]\n        ], {\n            color: '#FF9800',\n            weight: 3,\n            opacity: 0.7,\n            dashArray: '5, 10'\n        }).bindPopup('Маршрут').addTo(layers.polyline);\n        layers.polyline.addTo(map);\n        \n        // Функции управления\n        function changeBaseLayer() {\n            const selected = document.querySelector('input[name=\"baseLayer\"]:checked').value;\n            Object.values(baseLayers).forEach(layer => map.removeLayer(layer));\n            baseLayers[selected].addTo(map);\n        }\n        \n        function toggleLayer(name) {\n            const checkbox = document.getElementById(name);\n            if (checkbox.checked) {\n                layers[name].addTo(map);\n            } else {\n                map.removeLayer(layers[name]);\n            }\n        }\n        \n        function addRandomMarker() {\n            const lat = 53.8900 + Math.random() * 0.0400;\n            const lng = 27.5400 + Math.random() * 0.0300;\n            const marker = L.marker([lat, lng])\n                .bindPopup(`Новый маркер<br>${lat.toFixed(4)}, ${lng.toFixed(4)}`)\n                .addTo(layers.markers);\n            markersArray.push(marker);\n            updateStats();\n        }\n        \n        function fitBounds() {\n            const bounds = layers.markers.getBounds();\n            map.fitBounds(bounds);\n        }\n        \n        function clearAllMarkers() {\n            layers.markers.clearLayers();\n            markersArray.length = 0;\n            updateStats();\n        }\n        \n        function updateStats() {\n            document.getElementById('markerCount').textContent = markersArray.length;\n            document.getElementById('zoomLevel').textContent = map.getZoom();\n            const bounds = map.getBounds();\n            const boundsText = `${bounds.getNorth().toFixed(2)}° ${bounds.getEast().toFixed(2)}°`;\n            document.getElementById('boundsText').textContent = boundsText;\n        }\n        \n        // События карты\n        map.on('zoomend', updateStats);\n        map.on('moveend', updateStats);\n        \n        // Первоначальное обновление\n        updateStats();\n    </script>\n</body>\n</html>
