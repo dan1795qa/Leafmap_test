@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leafmap - Интерактивное приложение карт</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключение Leaflet для работы с картами -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка приложения -->
+        <header class="header">
+            <div class="header__content">
+                <h1 class="header__title">🗺️ Leafmap</h1>
+                <p class="header__subtitle">Интерактивное приложение для работы с картами</p>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="main">
+            <!-- Боковая панель -->
+            <aside class="sidebar">
+                <div class="sidebar__section">
+                    <h2>Управление картой</h2>
+                    <div class="control-panel">
+                        <div class="form-group">
+                            <label for="searchInput">Поиск локации:</label>
+                            <input type="text" id="searchInput" class="form-input" 
+                                   placeholder="Введите название...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="zoomLevel">Масштаб:</label>
+                            <input type="range" id="zoomLevel" min="2" max="18" value="13" 
+                                   class="form-slider">
+                            <span id="zoomValue">13</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Слои:</label>
+                            <div class="layer-toggle">
+                                <label>
+                                    <input type="checkbox" id="markerLayer" checked>
+                                    Маркеры
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="circleLayer" checked>
+                                    Круги
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="heatmapLayer">
+                                    Тепловая карта
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="resetButton" class="btn btn-primary">Сброс</button>
+                    </div>
+                </div>
+
+                <div class="sidebar__section">
+                    <h2>Информация</h2>
+                    <div id="infoPanel" class="info-panel">
+                        <p>Выберите точку на карте для получения информации</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Карта -->
+            <section class="map-section">
+                <div id="map" class="map-container"></div>
+            </section>
+        </main>
+
+        <!-- Подвал -->
+        <footer class="footer">
+            <p>&copy; 2025 Leafmap. Все права защищены.</p>
+        </footer>
+    </div>
+
+    <!-- Подключение Leaflet библиотеки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <!-- Подключение наших скриптов -->
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
